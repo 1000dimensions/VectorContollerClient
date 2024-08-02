@@ -1,0 +1,8 @@
+[package]
+name = "toughOnbabies"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+termion = "*"
+tokio = "1.39.2"
