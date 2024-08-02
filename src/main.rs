@@ -6,11 +6,13 @@ use termion::raw::IntoRawMode;
 fn main() {
     keyboardCap();
 }
-fn robot(xy: [f32; 2], spin: f32, edfbrr: f32, lock: bool) {
+//robot caputures all flags and then assembles them into a nice array. 
+fn robot(xy: [f32; 2], spin: f32, edfbrr: f32, lock: bool, shutoff: bool) {
     println!("{:?}", xy);
     println!("{:?}", spin);
     println!("{:?}", edfbrr);
     println!("{:?}", lock);
+    println!("{:?}", shutoff);
 
 
 }
@@ -20,7 +22,7 @@ fn keyboardCap() {
     let mut stdout = stdout().into_raw_mode().unwrap();
     let mut swervelock = false;
     let mut edfenable = false;
-   
+    let mut emergancy = false;
     write!(
         stdout,
         "{}{}Preston ctrl C is to exit. Make sure not to accidentally do it.{}",
@@ -39,16 +41,9 @@ fn keyboardCap() {
         let mut spin = 0.0;
         let mut edfbrr = 0.0;
         if edfenable == true {
-            edfbrr = 0.5;
+            edfbrr = 0.05;
         }
          
-        write!(
-            stdout,
-            "{}{}",
-            termion::cursor::Goto(1, 1),
-            termion::clear::CurrentLine
-        )
-        .unwrap();
 
         
         match k.as_ref().unwrap() {
@@ -65,6 +60,7 @@ fn keyboardCap() {
             Key::Char('e') => spin = 1.0,
             Key::Char('v') => {swervelock = !swervelock;}
             Key::Char('f') => {edfenable = !edfenable;}
+            Key::Char('o') => emergancy = true;
             Key::Char(' ') => {
                 if edfenable == true{
                     edfbrr = 1.0
@@ -75,15 +71,14 @@ fn keyboardCap() {
                 y = 0.0;
             }
         }
-        stdout.flush().unwrap();
         x = x * speed;
         y = y * speed;
         xy[0] = x;
         xy[1] = y;
         spin = spin * speed;
-        robot(xy, spin, edfbrr, swervelock);
+        robot(xy, spin, edfbrr, swervelock, emergancy);
+        // test functions to see if edf goes brrrrr.
+        //println!("is edf going brr? {:?}", edfenable);
+        //println!("how fast is edf going brr? {:?}", edfbrr);
     }
-        
-    write!(stdout, "{}", termion::cursor::Show).unwrap();
-
 }
