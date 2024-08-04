@@ -2,12 +2,13 @@ use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-
+use std::net::TcpStream;
 fn main() {
+
     keyboardCap();
 }
 //robot caputures all flags and then assembles them into a nice array. 
-fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) {
+fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) -> [u8; 16]{
     let mut bytes = g.to_le_bytes();
     let mut package: [u8; 16] = [0; 16];
     let mut position:usize = 0;
@@ -39,9 +40,11 @@ fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) {
     position = 14;
     package[position] = bit;
     println!{"{:?}", package};
+    return package;
 
 }
 fn keyboardCap() {
+    let mut client = TcpStream::connect("192.168.4.1:42").unwrap();
     let mut speed: f32 = 0.0;
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
@@ -98,7 +101,8 @@ fn keyboardCap() {
         x = x * speed;
         y = y * speed;
         spin = spin * speed;
-        robot(x, y, spin, edfbrr, swervelock, emergancy);
+        let package = robot(x, y, spin, edfbrr, swervelock, emergancy);
+        client.write_all(&package);
         // test functions to see if edf goes brrrrr.
         //println!("is edf going brr? {:?}", edfenable);
         //println!("how fast is edf going brr? {:?}", edfbrr);

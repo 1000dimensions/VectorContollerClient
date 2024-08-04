@@ -6,4 +6,3 @@ edition = "2021"
 [dependencies]
 tauri = "*"
 termion = "*"
-tokio = "1.39.2"
