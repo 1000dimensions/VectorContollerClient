@@ -1,11 +1,22 @@
-use std::io::{stdin, stdout, Write};
-use termion::event::Key;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
 use std::net::TcpStream;
-fn main() {
+use bevy::{prelude::*, time::common_conditions::on_timer, input::*};
+use std::sync::{Mutex, Arc};
+use std::borrow::*;
 
-    keyboardCap();
+
+
+
+#[derive(Resource, Default)]
+struct needless {
+    edfenable: bool,
+    speed:f32,
+}
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_systems(Update, keyboardCap)
+        .run();
 }
 //robot caputures all flags and then assembles them into a nice array. 
 fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) -> [u8; 16]{
@@ -39,72 +50,62 @@ fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) -> [
     bit |= (shutoff as u8) << 1;
     position = 14;
     package[position] = bit;
-    println!{"{:?}", package};
+    info!{"{:?}", package};
     return package;
-
 }
-fn keyboardCap() {
-    let mut client = TcpStream::connect("192.168.4.1:42").unwrap();
-    let mut speed: f32 = 0.0;
-    let stdin = stdin();
-    let mut stdout = stdout().into_raw_mode().unwrap();
+fn keyboardCap(keyboard_input: Res<ButtonInput<KeyCode>>) {
+   // let mut client = TcpStream::connect("192.168.4.1:42").unwrap();
     let mut swervelock = false;
-    let mut edfenable = false;
     let mut emergancy = false;
-    write!(
-        stdout,
-        "{}{}Preston ctrl C is to exit. Make sure not to accidentally do it.{}",
-        termion::clear::All,
-        termion::cursor::Goto(1, 1),
-        termion::cursor::Hide
-    )
-    .unwrap();
-    stdout.flush().unwrap();
-    
-    let mut speed:f32 = 0.0;
-    for k in stdin.keys() {
-        let mut x = 0.0;
-        let mut y = 0.0;
-        let mut spin = 0.0;
-        let mut edfbrr:u16 = 0;
-        if edfenable == true {
+    info!("Preston CTRL + C is to exit the program. Until you do that you will not be let out. ");    
+    let mut x = 0.0;
+    let mut y = 0.0;
+    let mut spin = 0.0;
+    let mut edfbrr:u16 = 0;
+    let mut cool = needless::default();
+    if cool.edfenable == true {
             edfbrr = 3277;
-        }
-         
-
-        
-        match k.as_ref().unwrap() {
-            Key::Char('a') => x = -1.0,
-            Key::Char('d') => x = 1.0,
-            Key::Char('w') => y = 1.0,
-            Key::Char('s') => y = -1.0,
-            Key::Ctrl('c') => break,
-            Key::Char('1') => speed = 0.1,
-            Key::Char('2') => speed = 0.25,
-            Key::Char('3') => speed = 0.5,
-            Key::Char('4') => speed = 0.9,
-            Key::Char('q') => spin = -1.0,
-            Key::Char('e') => spin = 1.0,
-            Key::Char('v') => {swervelock = !swervelock;}
-            Key::Char('f') => {edfenable = !edfenable;}
-            Key::Char('o') => {emergancy = true;},
-            Key::Char(' ') => {
-                if edfenable == true{
-                    edfbrr = 65535;
-                }
-            }
-            _ => {
-                x = 0.0;
-                y = 0.0;
-            }
-        }
-        x = x * speed;
-        y = y * speed;
-        spin = spin * speed;
-        let package = robot(x, y, spin, edfbrr, swervelock, emergancy);
-        client.write_all(&package);
-        // test functions to see if edf goes brrrrr.
-        //println!("is edf going brr? {:?}", edfenable);
-        //println!("how fast is edf going brr? {:?}", edfbrr);
+            println!("COOOL BEANS KIDDOS")
     }
-}
+    if keyboard_input.pressed(KeyCode::KeyF){
+        cool.edfenable = !cool.edfenable;
+        info!("fast");
+        info!("{:?}", cool.edfenable);
+    }
+
+    if keyboard_input.pressed(KeyCode::Digit1){
+        cool.speed = 0.1;
+    }
+    if keyboard_input.pressed(KeyCode::Digit2){
+        cool.speed = 0.25;
+    }
+    if keyboard_input.pressed(KeyCode::Digit3){
+        cool.speed = 0.5;
+    }
+    if keyboard_input.pressed(KeyCode::Digit4){
+        cool.speed = 0.9;
+    }
+    
+    
+    if keyboard_input.pressed(KeyCode::ArrowUp) {
+        y = 1.0;
+    }
+    if keyboard_input.pressed(KeyCode::ArrowLeft){
+        x = -1.0;
+    }
+    if keyboard_input.pressed(KeyCode::ArrowRight){
+        x = 1.0;
+    }
+    if keyboard_input.pressed(KeyCode::ArrowDown){
+        y = -1.0;
+    }
+    //x = x * speed;
+    //y = y * speed;
+    //spin = spin * speed;
+    let package = robot(x, y, spin, edfbrr, swervelock, emergancy);
+    //client.write_all(&package);}
+    
+    // test functions to see if edf goes brrrrr.
+    //println!("is edf going brr? {:?}", edfenable);
+    //println!("how fast is edf going brr? {:?}", edfbrr);
+} 
