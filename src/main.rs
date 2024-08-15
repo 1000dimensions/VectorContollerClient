@@ -16,10 +16,11 @@ fn main() {
     App::new()
         .insert_resource(StickyState {
             edfenable: false,
-            speed: 0.9
+            speed: 0.0
         })
+        .insert_resource(Time::<Fixed>::from_hz(60.0))
         .add_plugins(DefaultPlugins)
-        .add_systems(Update, keyboardCap)
+        .add_systems(FixedUpdate, keyboardCap)
         .run();
 }
 //robot caputures all flags and then assembles them into a nice array. 
@@ -62,7 +63,6 @@ fn keyboardCap(mut stickystate : ResMut<StickyState>, keyboard_input: Res<Button
    // let mut client = TcpStream::connect("192.168.4.1:42").unwrap();
     let mut swervelock = false;
     let mut emergancy = false;
-    info!("Preston CTRL + C is to exit the program. Until you do that you will not be let out. ");    
     let mut x = 0.0;
     let mut y = 0.0;
     let mut spin = 0.0;
@@ -74,6 +74,15 @@ fn keyboardCap(mut stickystate : ResMut<StickyState>, keyboard_input: Res<Button
         stickystate.edfenable = !stickystate.edfenable;
         info!("fast");
         info!("{:?}", stickystate.edfenable);
+    }
+    if keyboard_input.pressed(KeyCode::Space){
+        edfbrr = 65535;
+    }
+    if keyboard_input.pressed(KeyCode::KeyO){
+        emergancy = true;
+    }
+    if keyboard_input.pressed(KeyCode::KeyV){
+        swervelock = true;
     }
 
     if keyboard_input.pressed(KeyCode::Digit1){
@@ -88,7 +97,12 @@ fn keyboardCap(mut stickystate : ResMut<StickyState>, keyboard_input: Res<Button
     if keyboard_input.pressed(KeyCode::Digit4){
         stickystate.speed = 0.9;
     }
-    
+    if keyboard_input.pressed(KeyCode::KeyA){
+        spin = -1.0;
+    }
+    if keyboard_input.pressed(KeyCode::KeyD){
+        spin = 1.0;
+    }
     
     if keyboard_input.pressed(KeyCode::ArrowUp) {
         y = 1.0;
@@ -102,10 +116,11 @@ fn keyboardCap(mut stickystate : ResMut<StickyState>, keyboard_input: Res<Button
     if keyboard_input.pressed(KeyCode::ArrowDown){
         y = -1.0;
     }
-    //x = x * speed;
-    //y = y * speed;
-    //spin = spin * speed;
+    x = x * stickystate.speed;
+    y = y * stickystate.speed;
+    spin = spin * stickystate.speed;
     let package = robot(x, y, spin, edfbrr, swervelock, emergancy);
+    //uncommment when the robot is on and receiving.
     //client.write_all(&package);}
     
     // test functions to see if edf goes brrrrr.
