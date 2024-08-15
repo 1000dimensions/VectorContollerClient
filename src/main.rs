@@ -6,14 +6,18 @@ use std::borrow::*;
 
 
 
-#[derive(Resource, Default)]
-struct needless {
+#[derive(Resource)]
+struct StickyState {
     edfenable: bool,
     speed:f32,
 }
 
 fn main() {
     App::new()
+        .insert_resource(StickyState {
+            edfenable: false,
+            speed: 0.9
+        })
         .add_plugins(DefaultPlugins)
         .add_systems(Update, keyboardCap)
         .run();
@@ -53,7 +57,8 @@ fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) -> [
     info!{"{:?}", package};
     return package;
 }
-fn keyboardCap(keyboard_input: Res<ButtonInput<KeyCode>>) {
+
+fn keyboardCap(mut stickystate : ResMut<StickyState>, keyboard_input: Res<ButtonInput<KeyCode>>) {
    // let mut client = TcpStream::connect("192.168.4.1:42").unwrap();
     let mut swervelock = false;
     let mut emergancy = false;
@@ -62,28 +67,26 @@ fn keyboardCap(keyboard_input: Res<ButtonInput<KeyCode>>) {
     let mut y = 0.0;
     let mut spin = 0.0;
     let mut edfbrr:u16 = 0;
-    let mut cool = needless::default();
-    if cool.edfenable == true {
-            edfbrr = 3277;
-            println!("COOOL BEANS KIDDOS")
+    if stickystate.edfenable == true {
+        edfbrr = 3277;
     }
     if keyboard_input.pressed(KeyCode::KeyF){
-        cool.edfenable = !cool.edfenable;
+        stickystate.edfenable = !stickystate.edfenable;
         info!("fast");
-        info!("{:?}", cool.edfenable);
+        info!("{:?}", stickystate.edfenable);
     }
 
     if keyboard_input.pressed(KeyCode::Digit1){
-        cool.speed = 0.1;
+        stickystate.speed = 0.1;
     }
     if keyboard_input.pressed(KeyCode::Digit2){
-        cool.speed = 0.25;
+        stickystate.speed = 0.25;
     }
     if keyboard_input.pressed(KeyCode::Digit3){
-        cool.speed = 0.5;
+        stickystate.speed = 0.5;
     }
     if keyboard_input.pressed(KeyCode::Digit4){
-        cool.speed = 0.9;
+        stickystate.speed = 0.9;
     }
     
     
