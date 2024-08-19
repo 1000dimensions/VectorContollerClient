@@ -10,6 +10,7 @@ use std::borrow::*;
 struct StickyState {
     edfenable: bool,
     speed:f32,
+    client:TcpStream
 }
 
 fn main() {
@@ -17,6 +18,7 @@ fn main() {
         .insert_resource(StickyState {
             edfenable: false,
             speed: 0.0
+            client: TcpStream::connect("192.168.4.1:42").unwrap();
         })
         .insert_resource(Time::<Fixed>::from_hz(60.0))
         .add_plugins(DefaultPlugins)
@@ -60,11 +62,10 @@ fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) -> [
 }
 
 fn keyboardCap(mut stickystate : ResMut<StickyState>, keyboard_input: Res<ButtonInput<KeyCode>>) {
-   // let mut client = TcpStream::connect("192.168.4.1:42").unwrap();
+   // let mut cilient = TcpStream::connect("192.168.4.1:42").unwrap();
     let mut swervelock = false;
     let mut emergancy = false;
     let mut x = 0.0;
-    let mut y = 0.0;
     let mut spin = 0.0;
     let mut edfbrr:u16 = 0;
     if stickystate.edfenable == true {
