@@ -32,25 +32,25 @@ fn robot(g: f32, y: f32, spin: f32, edfbrr: u16, lock: bool, shutoff: bool) -> [
     let mut position:usize = 0;
     for x in bytes{
         package[position] = x;
-        position += 1
+        position += 1;
     }
     position = 4; 
     bytes = y.to_le_bytes();
     for x in bytes{
         package[position] = x;
-        position += 1
+        position += 1;
     }
     position = 8;
     bytes = spin.to_le_bytes();
     for x in bytes{
         package[position] = x;
-        position += 1
+        position += 1;
     }
     position = 12;
     let byte = edfbrr.to_le_bytes();
     for x in byte{
         package[position] = x;
-        position += 1
+        position += 1;
     }
     let mut bit = 0;
     bit |= (lock as u8) << 0;
